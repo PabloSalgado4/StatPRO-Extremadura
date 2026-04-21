@@ -16,7 +16,7 @@
         <div class="auth-zone">
             <button id="btn-nav-admin" class="btn-ghost" style="display:none; background: var(--danger); border: 1px solid rgba(255,255,255,0.2);">Panel de Administrador</button>
             <button id="btn-nav-goleadores" class="btn-ghost" style="display:none">Máximo Goleador</button>
-            <button id="btn-nav-equipo" class="btn-ghost" style="display:none">Mi Equipo</button>
+            <button id="btn-nav-equipo" class="btn-ghost" style="display:none">Mis Equipos</button>
             <button id="btn-ir-login" class="btn-ghost">Iniciar Sesión</button>
             <button id="btn-cerrar-sesion" class="btn-danger" style="display:none">Cerrar Sesión</button>
         </div>
@@ -108,10 +108,23 @@
                 </div>
             </section>
 
+            <section id="vista-mis-equipos" class="view-card" style="display:none; max-width: 900px;">
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h2>Mis Equipos</h2>
+                        <p>Selecciona un equipo para gestionar su plantilla y actas.</p>
+                    </div>
+                    <button id="btn-ir-crear-equipo" class="btn-primary-pro" style="width: auto; padding: 10px 20px; font-size: 0.85rem;">✚ Crear Nuevo Equipo</button>
+                </div>
+                <div id="grid-mis-equipos" class="teams-grid">
+                    </div>
+            </section>
+
             <section id="vista-crear-equipo" class="view-card" style="display:none">
+                <button id="btn-volver-lobby" class="btn-ghost" style="margin-bottom: 20px; border: 1px solid var(--border); background: transparent;">🔙 Volver a Mis Equipos</button>
                 <div class="auth-container">
-                    <h2>Registra tu Equipo</h2>
-                    <p style="margin-bottom: 20px; color: var(--muted);">Configura tu equipo y tu cuerpo técnico.</p>
+                    <h2>Registra un Nuevo Equipo</h2>
+                    <p style="margin-bottom: 20px; color: var(--muted);">Configura el club, categoría y cuerpo técnico.</p>
                     
                     <div class="input-row">
                         <div class="input-group" style="flex:1">
@@ -148,12 +161,15 @@
                         <div class="input-group" style="flex:1"><label>Staff 3</label><input type="text" id="new-equipo-staff3" placeholder="Ej. Delegado"></div>
                     </div>
 
-                    <button id="btn-guardar-equipo" class="btn-primary-pro" style="background: var(--success); margin-top: 15px;">Crear Equipo</button>
+                    <button id="btn-guardar-equipo" class="btn-primary-pro" style="background: var(--success); margin-top: 15px;">💾 Guardar Equipo</button>
                 </div>
             </section>
 
             <section id="vista-entrenador" style="display:none; max-width: 1100px; margin: 0 auto; animation: fadeIn 0.3s ease;">
-                <button id="btn-volver-admin-panel" class="btn-ghost" style="display:none; background: var(--border); margin-bottom: 20px;">🔙 Volver al Panel de Administrador</button>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button id="btn-volver-mis-equipos" class="btn-ghost" style="border: 1px solid var(--border); background: transparent;">🔙 Volver a Mis Equipos</button>
+                    <button id="btn-volver-admin-panel" class="btn-ghost" style="display:none; background: var(--border);">🔙 Volver al Panel Admin</button>
+                </div>
                 
                 <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
                     <div>
@@ -216,7 +232,7 @@
                 <div class="view-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h2 id="titulo-resultados">Resultados</h2>
-                        <p id="subtitulo-resultados">Liga Regular</p>
+                        <p id="subtitulo-resultados">Consulta el acta de cada partido</p>
                     </div>
                     <div class="input-group" style="width: 150px; margin-bottom: 0;">
                         <label>Jornada</label>
@@ -275,8 +291,7 @@
             </div>
             
             <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; max-height: 500px; overflow-y: auto;">
-                <div id="timeline-container" class="timeline">
-                    </div>
+                <div id="timeline-container" class="timeline"></div>
             </div>
         </div>
     </div>
@@ -415,7 +430,6 @@
             </div>
 
             <div style="margin-top: 20px; border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: rgba(0,0,0,0.2);">
-                
                 <div class="stopwatch-container">
                     <div class="stopwatch-display" id="timer-display">00:00</div>
                     <div class="stopwatch-controls">
@@ -429,17 +443,14 @@
                     <button id="btn-acta-vis" class="acta-tab">VISITANTE</button>
                 </div>
 
-                <div id="acta-jugadores-grid" class="acta-players-grid">
-                    </div>
+                <div id="acta-jugadores-grid" class="acta-players-grid"></div>
 
-                <div id="acta-actions-grid" class="acta-actions-grid">
-                    </div>
+                <div id="acta-actions-grid" class="acta-actions-grid"></div>
             </div>
 
             <div style="margin-top: 15px;">
                 <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold;">Eventos Registrados:</p>
-                <div id="lista-eventos-draft" style="max-height: 150px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
-                    </div>
+                <div id="lista-eventos-draft" style="max-height: 150px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px;"></div>
             </div>
 
             <div style="text-align: center; margin-top: 20px;">

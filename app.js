@@ -39,7 +39,7 @@ document.getElementById('btn-nav-goleadores').onclick = () => { mostrarSeccion('
 document.getElementById('btn-nav-equipo').onclick = () => {
     isAdminMode = false;
     document.getElementById('btn-volver-admin-panel').style.display = 'none';
-    verificarEquipoEntrenador(null); 
+    verificarEquipoEntrenador(); 
 };
 
 document.getElementById('btn-nav-admin').onclick = () => {
@@ -53,7 +53,7 @@ document.getElementById('btn-volver-admin-panel').onclick = () => {
 };
 
 function mostrarSeccion(id) {
-    const vistas = ['vista-inicio', 'vista-login', 'vista-entrenador', 'vista-crear-equipo', 'vista-clasificacion', 'vista-goleadores', 'vista-resultados', 'vista-admin'];
+    const vistas = ['vista-inicio', 'vista-login', 'vista-entrenador', 'vista-crear-equipo', 'vista-clasificacion', 'vista-goleadores', 'vista-resultados', 'vista-admin', 'vista-mis-equipos'];
     vistas.forEach(s => { const el = document.getElementById(s); if(el) el.style.display = 'none'; });
     const seccion = document.getElementById(id);
     if(seccion) seccion.style.display = 'block';
@@ -234,8 +234,10 @@ async function cargarAdminEquipos() {
 }
 
 window.entrarComoAdminAEquipo = async function(equipo_id) {
+    isAdminMode = true;
     document.getElementById('btn-volver-admin-panel').style.display = 'block';
-    verificarEquipoEntrenador(equipo_id); 
+    document.getElementById('btn-volver-mis-equipos').style.display = 'none';
+    abrirDashboardEquipo(equipo_id); 
 };
 
 async function cargarAdminPartidos() {
@@ -262,19 +264,10 @@ window.borrarPartidoAdmin = async function(partidoId, idL, idV, gl, gv) {
         let ptsL = 0, pgL = 0, peL = 0, ppL = 0;
         let ptsV = 0, pgV = 0, peV = 0, ppV = 0;
 
-        if (gl > gv) { ptsL=2; pgL=1; ppV=1; }
-        else if (gl === gv) { ptsL=1; peL=1; ptsV=1; peV=1; }
-        else { ptsV=2; pgV=1; ppL=1; }
+        if (gl > gv) { ptsL=2; pgL=1; ppV=1; } else if (gl === gv) { ptsL=1; peL=1; ptsV=1; peV=1; } else { ptsV=2; pgV=1; ppL=1; }
 
-        await supabase.from('equipos').update({
-            jugados: Math.max(0, (eqL.jugados||0) - 1), victorias: Math.max(0, (eqL.victorias||0) - pgL), empates: Math.max(0, (eqL.empates||0) - peL), derrotas: Math.max(0, (eqL.derrotas||0) - ppL),
-            goles_favor: Math.max(0, (eqL.goles_favor||0) - gl), goles_contra: Math.max(0, (eqL.goles_contra||0) - gv), puntos: Math.max(0, (eqL.puntos||0) - ptsL)
-        }).eq('id', idL);
-
-        await supabase.from('equipos').update({
-            jugados: Math.max(0, (eqV.jugados||0) - 1), victorias: Math.max(0, (eqV.victorias||0) - pgV), empates: Math.max(0, (eqV.empates||0) - peV), derrotas: Math.max(0, (eqV.derrotas||0) - ppV),
-            goles_favor: Math.max(0, (eqV.goles_favor||0) - gv), goles_contra: Math.max(0, (eqV.goles_contra||0) - gl), puntos: Math.max(0, (eqV.puntos||0) - ptsV)
-        }).eq('id', idV);
+        await supabase.from('equipos').update({ jugados: Math.max(0, (eqL.jugados||0) - 1), victorias: Math.max(0, (eqL.victorias||0) - pgL), empates: Math.max(0, (eqL.empates||0) - peL), derrotas: Math.max(0, (eqL.derrotas||0) - ppL), goles_favor: Math.max(0, (eqL.goles_favor||0) - gl), goles_contra: Math.max(0, (eqL.goles_contra||0) - gv), puntos: Math.max(0, (eqL.puntos||0) - ptsL) }).eq('id', idL);
+        await supabase.from('equipos').update({ jugados: Math.max(0, (eqV.jugados||0) - 1), victorias: Math.max(0, (eqV.victorias||0) - pgV), empates: Math.max(0, (eqV.empates||0) - peV), derrotas: Math.max(0, (eqV.derrotas||0) - ppV), goles_favor: Math.max(0, (eqV.goles_favor||0) - gv), goles_contra: Math.max(0, (eqV.goles_contra||0) - gl), puntos: Math.max(0, (eqV.puntos||0) - ptsV) }).eq('id', idV);
     }
     
     await supabase.from('partidos').delete().eq('id', partidoId);
@@ -283,39 +276,66 @@ window.borrarPartidoAdmin = async function(partidoId, idL, idV, gl, gv) {
 };
 
 // =========================================================
-// ============= GESTIÓN DE EQUIPOS Y JUGADORES ============
+// ====== GESTIÓN DE MIS EQUIPOS (MULTI-TEAM DASHBOARD) ====
 // =========================================================
 
-async function verificarEquipoEntrenador(equipoIdForzado = null) {
+async function verificarEquipoEntrenador() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return mostrarSeccion('vista-login');
 
-    let equipo;
-    if (equipoIdForzado) {
-        const { data } = await supabase.from('equipos').select('*').eq('id', equipoIdForzado).single();
-        equipo = data;
+    const { data: equipos } = await supabase.from('equipos').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+
+    if (equipos && equipos.length > 0) {
+        mostrarSeccion('vista-mis-equipos');
+        renderLobbyEquipos(equipos);
     } else {
-        const { data } = await supabase.from('equipos').select('*').eq('user_id', user.id).maybeSingle();
-        equipo = data;
+        mostrarSeccion('vista-crear-equipo');
+        document.getElementById('btn-volver-lobby').style.display = 'none';
     }
+}
 
-    if (equipo) {
-        miEquipoId = equipo.id;
-        miEquipoActual = equipo; 
+function renderLobbyEquipos(equipos) {
+    const grid = document.getElementById('grid-mis-equipos');
+    grid.innerHTML = '';
+    equipos.forEach(eq => {
+        grid.innerHTML += `
+            <div class="team-card" onclick="abrirDashboardEquipo('${eq.id}')">
+                <h3 style="color:var(--text); font-size:1.3rem;">${eq.nombre_equipo}</h3>
+                <p style="color:var(--muted); font-size:0.85rem;"><strong style="color:var(--accent)">${eq.modalidad}</strong> | ${eq.categoria} ${eq.genero}</p>
+            </div>
+        `;
+    });
+}
 
-        document.getElementById('coach-team-name').innerText = equipo.nombre_equipo;
-        document.getElementById('coach-team-info').innerText = `${equipo.categoria} ${equipo.genero} | ${equipo.modalidad}`;
+window.abrirDashboardEquipo = async function(idEquipo) {
+    const { data } = await supabase.from('equipos').select('*').eq('id', idEquipo).single();
+    if (data) {
+        miEquipoId = data.id;
+        miEquipoActual = data; 
+
+        document.getElementById('coach-team-name').innerText = data.nombre_equipo;
+        document.getElementById('coach-team-info').innerText = `${data.categoria} ${data.genero} | ${data.modalidad}`;
         
-        let staffText = `Entrenador: ${equipo.entrenador_principal}`;
-        if(equipo.staff_1 || equipo.staff_2 || equipo.staff_3) staffText += ` | Staff: ` + [equipo.staff_1, equipo.staff_2, equipo.staff_3].filter(Boolean).join(", ");
+        let staffText = `Entrenador: ${data.entrenador_principal}`;
+        if(data.staff_1 || data.staff_2 || data.staff_3) staffText += ` | Staff: ` + [data.staff_1, data.staff_2, data.staff_3].filter(Boolean).join(", ");
         document.getElementById('coach-staff-info').innerText = staffText;
+
+        if(!isAdminMode) {
+            document.getElementById('btn-volver-mis-equipos').style.display = 'inline-block';
+            document.getElementById('btn-volver-admin-panel').style.display = 'none';
+        }
 
         mostrarSeccion('vista-entrenador');
         cargarMiPlantilla();
-    } else {
-        mostrarSeccion('vista-crear-equipo');
     }
-}
+};
+
+document.getElementById('btn-volver-mis-equipos').onclick = () => { verificarEquipoEntrenador(); };
+document.getElementById('btn-ir-crear-equipo').onclick = () => { 
+    mostrarSeccion('vista-crear-equipo'); 
+    document.getElementById('btn-volver-lobby').style.display = 'inline-block';
+};
+document.getElementById('btn-volver-lobby').onclick = () => { verificarEquipoEntrenador(); };
 
 document.getElementById('btn-guardar-equipo').onclick = async function() {
     const btn = this; btn.innerText = "Creando..."; btn.disabled = true;
@@ -326,15 +346,19 @@ document.getElementById('btn-guardar-equipo').onclick = async function() {
     const cat = document.getElementById('new-equipo-cat').value;
     
     if (!nombre || !entrenador) {
-        btn.innerText = "Crear Equipo"; btn.disabled = false;
+        btn.innerText = "💾 Guardar Equipo"; btn.disabled = false;
         return alert("Nombre de equipo y entrenador son obligatorios");
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase.from('equipos').insert([{ nombre_equipo: nombre, modalidad: mod, genero: gen, categoria: cat, entrenador_principal: entrenador, user_id: user.id }]).select().single();
 
-    btn.innerText = "Crear Equipo"; btn.disabled = false;
-    if (!error) { miEquipoId = data.id; verificarEquipoEntrenador(); } else { alert(error.message); }
+    btn.innerText = "💾 Guardar Equipo"; btn.disabled = false;
+    
+    // Limpiamos los inputs
+    document.getElementById('new-equipo-nombre').value = '';
+    
+    if (!error) { abrirDashboardEquipo(data.id); } else { alert(error.message); }
 };
 
 document.getElementById('btn-borrar-equipo').onclick = async function() {
@@ -413,7 +437,7 @@ document.getElementById('btn-editar-stats').onclick = () => {
     document.getElementById('btn-guardar-stats').style.display = 'block';
 };
 
-document.getElementById('btn-guardar-stats').onclick = async () => {
+document.getElementById('btn-guardar-stats').onclick = async function() {
     const btn = this; btn.innerText = "Guardando..."; btn.disabled = true;
     const upd = { 
         nombre: document.getElementById('edit-nombre').value, dorsal: parseInt(document.getElementById('edit-dorsal-input').value), posicion: document.getElementById('edit-posicion-input').value,
@@ -618,6 +642,7 @@ document.getElementById('btn-acta-vis').onclick = () => {
     renderActaPlayers(); 
 };
 
+// AL ABRIR EL MODAL DE PARTIDO
 document.getElementById('btn-abrir-partido').onclick = async function() {
     if(!miEquipoActual) return;
     
@@ -759,7 +784,7 @@ document.getElementById('btn-guardar-partido').onclick = async function() {
 
     document.getElementById('modal-partido').style.display = 'none';
     btn.innerText = "💾 Finalizar y Guardar Acta"; btn.disabled = false;
-    verificarEquipoEntrenador(isAdminMode ? miEquipoId : null); 
+    verificarEquipoEntrenador(); 
     alert("¡Partido y Acta registrados correctamente!");
 };
 
@@ -782,7 +807,7 @@ document.getElementById('btn-guardar-equipo-stats').onclick = async function() {
         goles_favor: parseInt(document.getElementById('edit-eq-gf').value) || 0, goles_contra: parseInt(document.getElementById('edit-eq-gc').value) || 0
     };
     await supabase.from('equipos').update(upd).eq('id', miEquipoId);
-    document.getElementById('modal-equipo-stats').style.display = 'none'; verificarEquipoEntrenador(isAdminMode ? miEquipoId : null);
+    document.getElementById('modal-equipo-stats').style.display = 'none'; verificarEquipoEntrenador();
 };
 
 // --- EDITAR INFORMACIÓN DEL EQUIPO ---
@@ -806,10 +831,10 @@ document.getElementById('btn-guardar-info-equipo').onclick = async function() {
         staff_1: document.getElementById('info-eq-staff1').value, staff_2: document.getElementById('info-eq-staff2').value, staff_3: document.getElementById('info-eq-staff3').value,
     };
     await supabase.from('equipos').update(upd).eq('id', miEquipoId);
-    document.getElementById('modal-editar-info-equipo').style.display = 'none'; btn.innerText = "💾 Guardar Información"; btn.disabled = false; verificarEquipoEntrenador(isAdminMode ? miEquipoId : null);
+    document.getElementById('modal-editar-info-equipo').style.display = 'none'; btn.innerText = "💾 Guardar Información"; btn.disabled = false; verificarEquipoEntrenador();
 };
 
-// Cierre de todos los modales
+// Cierre de todos los modales (añadido reset de cronómetro)
 document.querySelectorAll('.close-btn').forEach(btn => {
     btn.onclick = function() { 
         this.parentElement.parentElement.style.display = 'none'; 

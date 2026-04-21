@@ -94,6 +94,11 @@ select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
 .coach-card { display: flex; align-items: center; gap: 15px; padding: 15px; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; margin: 15px 0; transition: all 0.2s; }
 #check-entrenador:checked + .coach-card { border-color: var(--accent); background: var(--accent-glow); }
 
+/* NUEVA GRID PARA MIS EQUIPOS */
+.teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+.team-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; gap: 10px; }
+.team-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 10px 20px -10px var(--accent-glow); background: rgba(6, 182, 212, 0.05); }
+
 .coach-dashboard { display: flex; flex-wrap: wrap; gap: 30px; }
 .add-player-panel { flex: 1; min-width: 300px; padding: 25px; }
 .input-row { display: flex; gap: 15px; }
@@ -236,22 +241,18 @@ select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
     .input-row { flex-direction: column; gap: 0; }
     .input-row .input-group { width: 100%; margin-bottom: 10px; }
     
-    /* Modales a pantalla completa casi */
     .modal-card { padding: 15px; width: 95%; max-height: 95vh; }
     .modal-header { padding-right: 25px; padding-bottom: 10px; margin-bottom: 15px; }
     .close-btn { top: 15px; right: 15px; font-size: 1.5rem; }
     
-    /* Grid de stats en modal */
     .modal-stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
     .stat-box:nth-child(1), .stat-box:nth-child(2) { grid-column: span 1; }
     .stat-box:nth-child(5) { grid-column: span 2; }
     .stat-value { font-size: 1.5rem; }
     
-    /* Tarjetas de partidos en vertical */
     .match-row-main { flex-direction: column; gap: 10px; }
     .match-score-container { width: 100%; justify-content: center; padding: 10px; }
     
-    /* Ajustes del Acta en Vivo (Botonera más compacta) */
     .stopwatch-display { font-size: 2.5rem; }
     .acta-players-grid { grid-template-columns: repeat(auto-fill, minmax(55px, 1fr)); min-height: 100px; gap: 5px; }
     .acta-player-btn { padding: 8px 2px; }
@@ -260,7 +261,6 @@ select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px v
     .acta-actions-grid { gap: 5px; }
     .acta-action-btn { padding: 10px 5px; font-size: 0.8rem; }
     
-    /* Timeline adaptado como un chat (todo a la izquierda) */
     .timeline::after { left: 20px; }
     .timeline-item { width: 100%; padding-left: 55px; padding-right: 0px; text-align: left; justify-content: flex-start; margin-bottom: 15px; }
     .timeline-item.local, .timeline-item.visitante { left: 0; }
