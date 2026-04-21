@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STATPRO EXTREMADURA | Elite Analytics</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="top-bar">
+        <div class="brand" id="logo-inicio">
+            <span class="dot"></span>
+            STATPRO <small>EXTREMADURA</small>
+        </div>
+        <div class="auth-zone">
+            <button id="btn-nav-admin" class="btn-ghost" style="display:none; background: var(--danger); border: 1px solid rgba(255,255,255,0.2);">Panel de Administrador</button>
+            <button id="btn-nav-goleadores" class="btn-ghost" style="display:none">Máximo Goleador</button>
+            <button id="btn-nav-equipo" class="btn-ghost" style="display:none">Mi Equipo</button>
+            <button id="btn-ir-login" class="btn-ghost">Iniciar Sesión</button>
+            <button id="btn-cerrar-sesion" class="btn-danger" style="display:none">Cerrar Sesión</button>
+        </div>
+    </nav>
+
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-group">
+                <p class="group-title">Consultas Públicas</p>
+                <div class="field">
+                    <label>Modalidad</label>
+                    <select id="sel-modalidad">
+                        <option value="BM Pista">BM Pista</option>
+                        <option value="BM Playa">BM Playa</option>
+                    </select>
+                </div>
+                
+                <div class="field">
+                    <label>Categoría y Género</label>
+                    <select id="sel-categoria">
+                        <option value="Infantil Masculino">Infantil Masculino</option>
+                        <option value="Infantil Femenino">Infantil Femenino</option>
+                        <option value="Cadete Masculino">Cadete Masculino</option>
+                        <option value="Cadete Femenino">Cadete Femenino</option>
+                        <option value="Juvenil Masculino">Juvenil Masculino</option>
+                        <option value="Juvenil Femenino">Juvenil Femenino</option>
+                        <option value="Senior Masculino">Senior Masculino</option>
+                        <option value="Senior Femenino">Senior Femenino</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Competición</label>
+                    <select id="sel-competicion">
+                        <option value="liga">Liga Regular</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button id="btn-continuar-consulta" class="btn-primary-pro" style="flex:1; padding: 10px; font-size: 0.85rem;">Clasificación</button>
+                    <button id="btn-ver-resultados" class="btn-ghost" style="flex:1; padding: 10px; font-size: 0.85rem; border: 1px solid var(--border);">Resultados</button>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot"></span> Sistema Conectado
+                <p id="aviso-login" style="color: var(--danger); font-size: 0.75rem; margin-top: 10px;">Inicia sesión para gestionar</p>
+            </div>
+        </aside>
+
+        <main class="viewport">
+            <section id="vista-inicio" class="view-card">
+                <div class="hero-content">
+                    <h1>Performance Tracking</h1>
+                    <p>Bienvenido al portal oficial de analítica de la Federación Extremeña de Balonmano.</p>
+                </div>
+            </section>
+
+            <section id="vista-admin" class="view-card" style="display:none; max-width: 1000px;">
+                <div class="view-header">
+                    <h2>Centro de Control (Administrador)</h2>
+                    <p>Gestión absoluta de la plataforma</p>
+                </div>
+                
+                <div class="auth-tabs" style="margin-top: 20px;">
+                    <button id="tab-admin-solicitudes" class="active">Solicitudes Entrenador</button>
+                    <button id="tab-admin-equipos">Gestión de Equipos</button>
+                    <button id="tab-admin-partidos">Historial de Partidos</button>
+                </div>
+
+                <div id="admin-content-solicitudes" class="table-container">
+                    <table class="stats-table">
+                        <thead><tr><th>Usuario (Email)</th><th>Estado</th><th>Acciones</th></tr></thead>
+                        <tbody id="tabla-body-solicitudes"></tbody>
+                    </table>
+                </div>
+
+                <div id="admin-content-equipos" class="table-container" style="display:none;">
+                    <table class="stats-table">
+                        <thead><tr><th>Club / Equipo</th><th>Liga</th><th>Entrenador</th><th>Acciones</th></tr></thead>
+                        <tbody id="tabla-body-admin-equipos"></tbody>
+                    </table>
+                </div>
+
+                <div id="admin-content-partidos" class="table-container" style="display:none;">
+                    <table class="stats-table">
+                        <thead><tr><th>Fecha</th><th>Liga</th><th>Jornada</th><th>Partido y Resultado</th><th>Deshacer</th></tr></thead>
+                        <tbody id="tabla-body-admin-partidos"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="vista-crear-equipo" class="view-card" style="display:none">
+                <div class="auth-container">
+                    <h2>Registra tu Equipo</h2>
+                    <p style="margin-bottom: 20px; color: var(--muted);">Configura tu equipo y tu cuerpo técnico.</p>
+                    
+                    <div class="input-row">
+                        <div class="input-group" style="flex:1">
+                            <label>Nombre del Club / Equipo</label>
+                            <input type="text" id="new-equipo-nombre" placeholder="Ej. BM Mérida">
+                        </div>
+                        <div class="input-group" style="flex:1">
+                            <label>Entrenador Principal</label>
+                            <input type="text" id="new-equipo-entrenador" placeholder="Tu nombre">
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <div class="input-group" style="flex:1">
+                            <label>Modalidad</label>
+                            <select id="new-equipo-mod"><option>BM Pista</option><option>BM Playa</option></select>
+                        </div>
+                        <div class="input-group" style="flex:1">
+                            <label>Género</label>
+                            <select id="new-equipo-gen"><option>Masculino</option><option>Femenino</option></select>
+                        </div>
+                        <div class="input-group" style="flex:1">
+                            <label>Categoría</label>
+                            <select id="new-equipo-cat">
+                                <option>Infantil</option><option>Cadete</option><option>Juvenil</option><option>Senior</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 15px; margin-bottom: 10px; font-size: 0.85rem; color: var(--muted); font-weight: 600; text-transform: uppercase;">Cuerpo Técnico (Opcional)</p>
+                    <div class="input-row">
+                        <div class="input-group" style="flex:1"><label>Staff 1</label><input type="text" id="new-equipo-staff1" placeholder="Ej. 2º Entrenador"></div>
+                        <div class="input-group" style="flex:1"><label>Staff 2</label><input type="text" id="new-equipo-staff2" placeholder="Ej. Médico / Físio"></div>
+                        <div class="input-group" style="flex:1"><label>Staff 3</label><input type="text" id="new-equipo-staff3" placeholder="Ej. Delegado"></div>
+                    </div>
+
+                    <button id="btn-guardar-equipo" class="btn-primary-pro" style="background: var(--success); margin-top: 15px;">Crear Equipo</button>
+                </div>
+            </section>
+
+            <section id="vista-entrenador" style="display:none; max-width: 1100px; margin: 0 auto; animation: fadeIn 0.3s ease;">
+                <button id="btn-volver-admin-panel" class="btn-ghost" style="display:none; background: var(--border); margin-bottom: 20px;">🔙 Volver al Panel de Administrador</button>
+                
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <h2 id="coach-team-name">Mi Equipo</h2>
+                        <p id="coach-team-info">Categoría | Modalidad</p>
+                        <p id="coach-staff-info" style="font-size: 0.8rem; color: var(--accent); margin-top: 5px; font-weight: 600;">Entrenador: -</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px; min-width: 150px;">
+                        <button id="btn-abrir-partido" class="btn-primary-pro" style="padding: 8px 15px; font-size: 0.8rem;">📝 Añadir Partido</button>
+                        <button id="btn-editar-info-equipo" class="btn-ghost" style="padding: 8px 15px; font-size: 0.8rem; border: 1px solid var(--muted); background: transparent;">⚙️ Configurar</button>
+                        <button id="btn-editar-equipo-stats" class="btn-ghost" style="padding: 8px 15px; font-size: 0.8rem; border: 1px solid var(--accent);">✏️ Editar Liga</button>
+                        <button id="btn-borrar-equipo" class="btn-danger" style="padding: 8px 15px; font-size: 0.8rem; background: transparent; border: 1px solid var(--danger); color: var(--danger);">🗑️ Borrar Equipo</button>
+                    </div>
+                </div>
+                
+                <div class="coach-dashboard">
+                    <div class="add-player-panel">
+                        <h3>Añadir Jugador</h3>
+                        <div class="input-group">
+                            <label>Nombre completo</label>
+                            <input type="text" id="add-nombre" placeholder="Ej. Juan Pérez">
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group" style="flex:1">
+                                <label>Dorsal</label>
+                                <input type="number" id="add-dorsal" placeholder="00">
+                            </div>
+                            <div class="input-group" style="flex:2">
+                                <label>Posición</label>
+                                <select id="add-posicion">
+                                    <option>Portero</option><option>Central</option><option>Lateral</option><option>Extremo</option><option>Pivote</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="btn-add-jugador" class="btn-primary-pro" style="background: var(--success); margin-top: 10px;">✚ Dar de Alta</button>
+                    </div>
+                    
+                    <div class="players-roster">
+                        <h3>Plantilla Registrada</h3>
+                        <div id="lista-mis-jugadores" class="roster-grid"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="vista-clasificacion" class="view-card" style="display:none; max-width: 950px;">
+                <div class="view-header">
+                    <h2 id="titulo-clasificacion">Clasificación Equipos</h2>
+                </div>
+                <div class="table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>PTOS</th></tr>
+                        </thead>
+                        <tbody id="tabla-body-equipos"></tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <section id="vista-resultados" class="view-card" style="display:none; max-width: 800px;">
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 id="titulo-resultados">Resultados</h2>
+                        <p id="subtitulo-resultados">Liga Regular</p>
+                    </div>
+                    <div class="input-group" style="width: 150px; margin-bottom: 0;">
+                        <label>Jornada</label>
+                        <select id="sel-filtro-jornada" style="margin-bottom: 0;"></select>
+                    </div>
+                </div>
+                <div id="contenedor-partidos" style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;"></div>
+            </section>
+
+            <section id="vista-goleadores" class="view-card" style="display:none; max-width: 800px;">
+                <div class="view-header">
+                    <h2 id="titulo-goleadores">Máximos Goleadores</h2>
+                </div>
+                <div class="table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr><th>Ranking</th><th>Jugador</th><th>Equipo</th><th>Goles Totales</th></tr>
+                        </thead>
+                        <tbody id="tabla-body-goleadores"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="vista-login" class="view-card" style="display:none">
+                <div class="auth-container">
+                    <div class="auth-tabs">
+                        <button id="tab-login" class="active">Entrar</button>
+                        <button id="tab-registro">Registro</button>
+                    </div>
+                    <div id="form-login">
+                        <input type="email" id="correo" placeholder="Email">
+                        <input type="password" id="pass" placeholder="Contraseña">
+                        <button id="btn-entrar" class="btn-primary-pro">Entrar</button>
+                    </div>
+                    <div id="form-registro" style="display:none">
+                        <input type="email" id="reg-correo" placeholder="Nuevo Email">
+                        <input type="password" id="reg-pass" placeholder="Contraseña">
+                        <div class="role-selector">
+                            <input type="checkbox" id="check-entrenador" hidden>
+                            <label for="check-entrenador" class="coach-card">📋 Solicitar Cuenta de Entrenador</label>
+                        </div>
+                        <button id="btn-crear-cuenta" class="btn-primary-pro">Crear Cuenta</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal-ver-acta" class="modal-overlay" style="display:none;">
+        <div class="modal-card" style="max-width: 700px; padding: 40px;">
+            <button id="btn-cerrar-modal-ver-acta" class="close-btn">&times;</button>
+            <div class="modal-header" style="text-align: center; border-bottom: none; margin-bottom: 10px;">
+                <p style="color: var(--accent); font-weight: bold; letter-spacing: 2px; text-transform: uppercase; font-size: 0.75rem;">Play-by-Play Oficial</p>
+                <h2 id="acta-info-equipos" style="font-size: 1.8rem; margin-top: 10px; margin-bottom: 5px;"></h2>
+                <h1 id="acta-resultado-final" style="font-size: 3rem; font-weight: 800; color: var(--text);"></h1>
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; max-height: 500px; overflow-y: auto;">
+                <div id="timeline-container" class="timeline">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-estadisticas" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <button id="btn-cerrar-modal-jugador" class="close-btn">&times;</button>
+            <div class="modal-header" id="modal-header-jugador">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span id="modal-dorsal" class="player-number">--</span>
+                    <div>
+                        <h3 id="modal-nombre">Nombre</h3>
+                        <span id="modal-posicion" style="color: var(--accent); font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Posicion</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="stats-vista" class="modal-stats-grid">
+                <div class="stat-box"><div class="stat-value" id="stat-goles">0</div><div class="stat-label">Goles</div></div>
+                <div class="stat-box"><div class="stat-value" id="stat-partidos">0</div><div class="stat-label">Partidos</div></div>
+                <div class="stat-box"><div class="stat-value" id="stat-exclusiones" style="color: #f59e0b;">0</div><div class="stat-label">2 Min</div></div>
+                <div class="stat-box"><div class="stat-value" id="stat-amarillas" style="color: #facc15;">0</div><div class="stat-label">Amarillas</div></div>
+                <div class="stat-box"><div class="stat-value" id="stat-rojas" style="color: var(--danger);">0</div><div class="stat-label">Rojas</div></div>
+            </div>
+            
+            <div id="stats-edicion" style="display: none;">
+                <p style="font-size:0.75rem; color:var(--muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:1px;">Datos del Jugador</p>
+                <div class="input-row" style="margin-bottom: 15px;">
+                    <input type="text" id="edit-nombre" placeholder="Nombre" style="flex:2; margin:0;">
+                    <input type="number" id="edit-dorsal-input" placeholder="Dorsal" style="flex:1; margin:0;">
+                    <select id="edit-posicion-input" style="flex:1.5; margin:0;">
+                        <option>Portero</option><option>Central</option><option>Lateral</option><option>Extremo</option><option>Pivote</option>
+                    </select>
+                </div>
+                
+                <p style="font-size:0.75rem; color:var(--muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:1px;">Estadísticas (Histórico)</p>
+                <div class="modal-stats-grid">
+                    <div class="stat-box"><input type="number" id="edit-goles" class="stat-input"><div class="stat-label">Goles</div></div>
+                    <div class="stat-box"><input type="number" id="edit-partidos" class="stat-input"><div class="stat-label">Partidos</div></div>
+                    <div class="stat-box"><input type="number" id="edit-exclusiones" class="stat-input" style="color: #f59e0b;"><div class="stat-label">2 Min</div></div>
+                    <div class="stat-box"><input type="number" id="edit-amarillas" class="stat-input" style="color: #facc15;"><div class="stat-label">Amarillas</div></div>
+                    <div class="stat-box"><input type="number" id="edit-rojas" class="stat-input" style="color: var(--danger);"><div class="stat-label">Rojas</div></div>
+                </div>
+            </div>
+
+            <div style="margin-top:20px; display:flex; gap:10px;">
+                <button id="btn-borrar-jugador" class="btn-danger" style="flex:0.3; padding: 10px; background: transparent; border: 1px solid var(--danger); color: var(--danger);">🗑️</button>
+                <button id="btn-editar-stats" class="btn-ghost" style="flex:1; border: 1px solid var(--border);">✏️ Editar Datos</button>
+                <button id="btn-guardar-stats" class="btn-primary-pro" style="display:none; flex:1.3; background:var(--success);">💾 Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-equipo-stats" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <button id="btn-cerrar-modal-equipo" class="close-btn">&times;</button>
+            <div class="modal-header">
+                <h3>Clasificación a Mano</h3>
+                <span style="color: var(--accent); font-size: 0.85rem; font-weight: 600;">Actualiza los resultados de liga</span>
+            </div>
+            
+            <div class="modal-stats-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="stat-box"><input type="number" id="edit-eq-pj" class="stat-input" placeholder="0"><div class="stat-label">Partidos Jug.</div></div>
+                <div class="stat-box"><input type="number" id="edit-eq-ptos" class="stat-input" style="color: var(--success);" placeholder="0"><div class="stat-label">Puntos</div></div>
+                <div class="stat-box"><input type="number" id="edit-eq-pg" class="stat-input" placeholder="0"><div class="stat-label">Victorias (PG)</div></div>
+                <div class="stat-box"><input type="number" id="edit-eq-pe" class="stat-input" placeholder="0"><div class="stat-label">Empates (PE)</div></div>
+                <div class="stat-box"><input type="number" id="edit-eq-pp" class="stat-input" style="color: var(--danger);" placeholder="0"><div class="stat-label">Derrotas (PP)</div></div>
+                <div class="stat-box"><input type="number" id="edit-eq-gf" class="stat-input" placeholder="0"><div class="stat-label">Goles Favor</div></div>
+                <div class="stat-box" style="grid-column: span 2;"><input type="number" id="edit-eq-gc" class="stat-input" placeholder="0"><div class="stat-label">Goles Contra</div></div>
+            </div>
+
+            <div style="margin-top:20px; display:flex;">
+                <button id="btn-guardar-equipo-stats" class="btn-primary-pro" style="width: 100%; background:var(--success);">💾 Guardar Clasificación</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-editar-info-equipo" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <button id="btn-cerrar-modal-info" class="close-btn">&times;</button>
+            <div class="modal-header">
+                <h3>Información del Equipo</h3>
+                <span style="color: var(--accent); font-size: 0.85rem; font-weight: 600;">Renombra el club o cuerpo técnico</span>
+            </div>
+
+            <div class="input-group"><label>Nombre del Club / Equipo</label><input type="text" id="info-eq-nombre"></div>
+            <div class="input-group"><label>Entrenador Principal</label><input type="text" id="info-eq-entrenador"></div>
+            
+            <div class="input-row">
+                <div class="input-group" style="flex:1"><label>Modalidad</label><select id="info-eq-mod"><option>BM Pista</option><option>BM Playa</option></select></div>
+                <div class="input-group" style="flex:1"><label>Género</label><select id="info-eq-gen"><option>Masculino</option><option>Femenino</option></select></div>
+                <div class="input-group" style="flex:1">
+                    <label>Categoría</label>
+                    <select id="info-eq-cat"><option>Infantil</option><option>Cadete</option><option>Juvenil</option><option>Senior</option></select>
+                </div>
+            </div>
+
+            <p style="margin-top: 10px; margin-bottom: 5px; font-size: 0.75rem; color: var(--muted); text-transform: uppercase;">Cuerpo Técnico</p>
+            <div class="input-row">
+                <input type="text" id="info-eq-staff1" placeholder="Staff 1" style="flex:1; margin-bottom:0;">
+                <input type="text" id="info-eq-staff2" placeholder="Staff 2" style="flex:1; margin-bottom:0;">
+                <input type="text" id="info-eq-staff3" placeholder="Staff 3" style="flex:1; margin-bottom:0;">
+            </div>
+
+            <div style="margin-top:20px; display:flex;">
+                <button id="btn-guardar-info-equipo" class="btn-primary-pro" style="width: 100%; background:var(--success);">💾 Guardar Información</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-partido" class="modal-overlay" style="display:none;">
+        <div class="modal-card" style="max-width: 650px;">
+            <button id="btn-cerrar-modal-partido-crear" class="close-btn">&times;</button>
+            <div class="modal-header">
+                <h3>Registrar Partido</h3>
+                <span style="color: var(--accent); font-size: 0.85rem;">Configura el tipo de partido y registra el acta.</span>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <p style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: bold; margin-bottom: 10px;">Filtros de Competición</p>
+                <div class="input-row">
+                    <div class="input-group" style="flex:1"><label>Modalidad</label><select id="partido-mod"><option value="BM Pista">BM Pista</option><option value="BM Playa">BM Playa</option></select></div>
+                    <div class="input-group" style="flex:1"><label>Género</label><select id="partido-gen"><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option></select></div>
+                    <div class="input-group" style="flex:1"><label>Categoría</label><select id="partido-cat"><option value="Infantil">Infantil</option><option value="Cadete">Cadete</option><option value="Juvenil">Juvenil</option><option value="Senior">Senior</option></select></div>
+                    <div class="input-group" style="flex:1"><label>Competición</label><select id="partido-comp"><option value="liga">Liga Regular</option><option value="copa">Copa</option></select></div>
+                </div>
+            </div>
+            
+            <div class="input-row" style="margin-top: 15px;">
+                <div class="input-group" style="flex:1;">
+                    <label>Jornada</label>
+                    <select id="partido-jornada"></select>
+                </div>
+                <div class="input-group" style="flex:2;"><label>Equipo Local</label><select id="partido-local"></select></div>
+                <div class="input-group" style="flex:2;"><label>Equipo Visitante</label><select id="partido-visitante"></select></div>
+            </div>
+
+            <div style="margin-top: 20px; border: 1px solid var(--border); padding: 20px; border-radius: 12px; background: rgba(0,0,0,0.2);">
+                
+                <div class="stopwatch-container">
+                    <div class="stopwatch-display" id="timer-display">00:00</div>
+                    <div class="stopwatch-controls">
+                        <button id="btn-timer-toggle" class="btn-timer primary">▶ Iniciar</button>
+                        <button id="btn-timer-reset" class="btn-timer secondary">⏹ Reset</button>
+                    </div>
+                </div>
+
+                <div class="acta-tabs" style="margin-top: 20px;">
+                    <button id="btn-acta-local" class="acta-tab active">LOCAL</button>
+                    <button id="btn-acta-vis" class="acta-tab">VISITANTE</button>
+                </div>
+
+                <div id="acta-jugadores-grid" class="acta-players-grid">
+                    </div>
+
+                <div id="acta-actions-grid" class="acta-actions-grid">
+                    </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; font-weight: bold;">Eventos Registrados:</p>
+                <div id="lista-eventos-draft" style="max-height: 150px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
+                    </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="color: var(--muted); font-size: 0.8rem; text-transform: uppercase;">Marcador Automático</p>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 5px;">
+                    <span id="preview-goles-local" style="font-size: 2.5rem; font-weight: 800; color: var(--text);">0</span>
+                    <span style="color: var(--muted);">-</span>
+                    <span id="preview-goles-visitante" style="font-size: 2.5rem; font-weight: 800; color: var(--text);">0</span>
+                </div>
+                <input type="hidden" id="partido-gf-local" value="0">
+                <input type="hidden" id="partido-gf-visitante" value="0">
+            </div>
+
+            <div style="margin-top:25px;">
+                <button id="btn-guardar-partido" class="btn-primary-pro" style="width: 100%; background: var(--success);">💾 Finalizar y Guardar Acta</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
